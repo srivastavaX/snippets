@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+if [ "$BLOCK_BUTTON" -eq 1 ]; then
+    pactl set-sink-mute @DEFAULT_SINK@ toggle
+    pkill -RTMIN+11 i3blocks
+fi
+
+MODE="$1"
+calling for display
+if [[ "$MODE" == "num" ]]; then
+    pactl get-sink-volume @DEFAULT_SINK@ | awk '{print $5}' | head -n1
+elif [[ "$MODE" == "mute" ]]; then
+    MUTED=$(pactl get-sink-mute @DEFAULT_SINK@ | awk '{print $2}')
+    [[ "$MUTED" == "yes" ]] && echo "<span foreground='red' rise='1pt' size='x-large'> </span>" || echo "<span rise='1pt' size='x-large'> </span>"
+
+# calling for key-action
+elif [[ "$MODE" == "up" ]]; then
+    pactl set-sink-volume @DEFAULT_SINK@ +5%
+    pkill -RTMIN+10 i3blocks
+elif [[ "$MODE" == "down" ]]; then
+    pactl set-sink-volume @DEFAULT_SINK@ -5%
+    pkill -RTMIN+10 i3blocks
+elif [[ "$MODE" == "toggle" ]]; then
+    pactl set-sink-mute @DEFAULT_SINK@ toggle
+    pkill -RTMIN+11 i3blocks
+fi

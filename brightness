@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+case "$1" in
+    up)
+        brightnessctl set +5%
+        ;;
+    down)
+        brightnessctl set 5%-
+        ;;
+esac
+pkill -RTMIN+2 i3blocks

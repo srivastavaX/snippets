@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+# --follow: for symlinks
+# --hidden
+selected_dir=$( fd -t d --follow --exclude '.*' \
+    | fzf --height=60% --border --prompt="cd  : " )
+
+if [ -n "$selected_dir" ]; then
+    echo "Selected directry: '$selected_dir'" >&2
+
+    if [ -d "$selected_dir" ]; then
+        printf 'cd %q\n' "$selected_dir"
+    else
+        echo "Error: '$selected_dir' is not a valid directory" >&2
+    fi
+else
+    echo "No directory selected" >&2
+fi
+# https://www.nerdfonts.com/cheat-sheet -> 

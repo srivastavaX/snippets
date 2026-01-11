@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+WALL_DIR="$HOME/Gallery/_wallpapers"
+CACHE="/tmp/wallpaper_index.txt"
+
+# Get sorted list of wallpapers
+WALLS=($(ls "$WALL_DIR"/*.{jpg,png,jpeg} 2>/dev/null | sort))
+
+# Exit if no wallpapers found
+[[ ${#WALLS[@]} -eq 0 ]] && exit 1
+
+# Read last index from cache
+if [[ -f "$CACHE" ]]; then
+    INDEX=$(cat "$CACHE")
+else
+    INDEX=0
+fi
+
+# Set wallpaper
+feh --bg-fill "${WALLS[$INDEX]}"
+
+# Increment index and wrap around
+INDEX=$(( (INDEX + 1) % ${#WALLS[@]} ))
+
+# Save new index
+echo "$INDEX" > "$CACHE"

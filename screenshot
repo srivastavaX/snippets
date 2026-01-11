@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+ATTACH_DIR="$HOME/Zettelkasten/attachments"
+[[ ! -d "$ATTACH_DIR" ]] && mkdir -p "$ATTACH_DIR" && notify-send "Attachment folder created" "$ATTACH_DIR"
+
+TIMESTAMP=$(date +%y-%m-%d_%H-%M-%S)
+OUTPUT_FILE="shot_$TIMESTAMP.png"
+TMP_FILE="/tmp/.flameshot_$TIMESTAMP.png"
+
+# screenshot
+flameshot gui --raw > "$TMP_FILE"
+
+if [[ ! -s "$TMP_FILE" ]]; then
+    rm -f "$TMP_FILE"
+    exit 1
+fi
+
+# compress and save
+magick "$TMP_FILE" -strip -define png:compression-level=9 "$ATTACH_DIR/$OUTPUT_FILE"
+notify-send "Screenshot saved" "$(basename "$OUTPUT_FILE")"
+
+echo "![[$OUTPUT_FILE]]" | xclip -selection clipboard
+

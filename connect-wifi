@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+
+set -e
+
+connect_wifi() { 
+    nmcli radio wifi on
+    nmcli device wifi rescan
+    sleep 2
+
+    echo "------- AVAILABLE Wi-Fi NETWORKS -------"
+    nmcli device wifi list
+
+    read -rp "Do you want to connect to any Wi-Fi network? (y/n): " confirm
+
+    if [[ "$confirm" == [yY]* ]]; then
+        read -rp "ENTER SSID: " ssid
+        read -rsp "ENTER PASSWORD: " password
+        nmcli device wifi connect "$ssid" password "$password"
+    fi
+}
+
+cls() {
+    clear
+    echo "█████╗█████╗█████╗█████╗█████╗█████╗█████╗"
+    echo "╚════╝╚════╝╚════╝╚════╝╚════╝╚════╝╚════╝"
+}
+
+while true; do
+    cls
+    echo "1. CONNECT TO Wi-Fi"
+    echo "2. DISCONNECT Wi-Fi"
+    echo "3. TOGGLE Wi-Fi ON/OFF"
+    echo "4. LIST AVAILABLE CONNECTIONS"
+    echo "5. DELETE A SAVED CONNECTION"
+    echo "0. EXIT"
+    echo ""
+
+    read -rp "CHOOSE AN OPTION: " choice
+    cls
+
+    case $choice in
+        1)
+            connect_wifi
+            ;;
+        2)
+            echo ":)"
+            ;;
+        3)
+            STATE=$(nmcli radio wifi)
+            if [[ "$STATE" == "enabled" ]]; then
+                nmcli radio wifi off
+                echo "Wi-Fi DISABLED"
+            else
+                nmcli radio wifi on
+                echo "Wi-Fi ENABLED"
+            fi
+            ;;
+        4)
+            nmcli connection show
+            ;;
+        5)
+            nmcli connection show
+            read -rp "NAME A CONNECTION TO DELETE: " conn
+            nmcli connection delete "$conn"
+            ;;
+        0) clear && exit 0 ;;
+        *) echo "INVALID OPTION" ;;
+    esac
+
+    read -r
+done

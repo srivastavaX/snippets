@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+set -e
+
+DOTFILES_DIR="$HOME/repos/dotfiles"
+
+TARGET_DIR="$HOME"
+
+if ! command -v stow &>/dev/null; then
+    echo "ERROR: GNU STOW IS NOT INSTALLED."
+    exit 1
+fi
+
+if [[ $# -ne 1 ]]; then
+    echo "Usage: $0 [stow|unstow]"
+    exit 1
+fi
+
+ACTION="$1"
+
+for pkg in "$DOTFILES_DIR"/*/; do
+    pkg_name=$(basename "$pkg")
+
+    if [[ "$ACTION" == "stow" ]]; then
+        echo "STOWING $pkg_name..."
+        stow -d "$DOTFILES_DIR" -t "$TARGET_DIR" "$pkg_name"
+    elif [[ "$ACTION" == "unstow" ]]; then
+        echo "UNSTOWING $pkg_name..."
+        stow -D -d "$DOTFILES_DIR" -t "$TARGET_DIR" "$pkg_name"
+    else
+        echo "INVALID ACTION: $ACTION. USE 'STOW' OR 'UNSTOW'."
+        exit 1
+    fi
+done
+
+echo "ALL PACKAGES $ACTION COMPLETED."

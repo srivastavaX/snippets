@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+#if git diff-index --quiet HEAD --; then
+#  echo "No changes to commit."
+#  exit 0
+#fi
+
+read -p "COMMIT-MESSAGE: " commitmessage
+git add .
+git commit -m "$commitmessage"
+git push

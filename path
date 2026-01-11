@@ -1,0 +1,5 @@
+#!/usr/bin/env zsh
+# ${variable//search/replace} — Bash built-in pattern substitution
+#It uses no sed, no awk, no external commands—just a Bash built-in.
+#echo -e ${PATH//:/\\n}
+printf "%s\n" ${PATH//:/$'\n'}
