@@ -19,8 +19,13 @@ fi
 # Set wallpaper
 feh --bg-fill "${WALLS[$INDEX]}"
 
-# Increment index and wrap around
-INDEX=$(( (INDEX + 1) % ${#WALLS[@]} ))
 
-# Save new index
+case "$1" in
+    next)
+        INDEX=$(( (INDEX + 1) % ${#WALLS[@]} ))
+        ;;
+    prev)
+        INDEX=$(( (INDEX - 1) % ${#WALLS[@]} ))
+        ;;
+esac
 echo "$INDEX" > "$CACHE"

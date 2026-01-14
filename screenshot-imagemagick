@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ATTACH_DIR="$HOME/Zettelkasten/attachments"
+ATTACH_DIR="$HOME/Zettelkasten/00\ -\ attachments"
 [[ ! -d "$ATTACH_DIR" ]] && mkdir -p "$ATTACH_DIR" && notify-send "Attachment folder created" "$ATTACH_DIR"
 
 OUTPUT_FILE="shot_$(date +%y-%m-%d_%H-%M-%S).jpg"
