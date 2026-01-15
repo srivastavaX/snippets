@@ -6,27 +6,4 @@ LOCK_IMG="/tmp/lockscreen.png"
 
 magick "$IMG" -resize $(xdpyinfo | awk '/dimensions/{print $2}')^ -gravity center -extent $(xdpyinfo | awk '/dimensions/{print $2}') "$LOCK_IMG"
 
-i3lock \
-  --image="$LOCK_IMG" \
-  --indicator \
-  --ring-width=4 \
-  --radius=120 \
-  --inside-color=00000088 \
-  --ring-color=ffffff88 \
-  --keyhl-color=00ff9988 \
-  --bshl-color=ff005588 \
-  --line-color=00000000 \
-  --separator-color=00000000 \
-  --insidever-color=00ff9988 \
-  --insidewrong-color=ff005588 \
-  --ringver-color=00ff99ff \
-  --ringwrong-color=ff0055ff \
-  --time-color=ffffffff \
-  --date-color=ccccccff \
-  --time-str="%H:%M" \
-  --date-str="%A, %d %B" \
-  --verif-text="Authenticating…" \
-  --wrong-text="Gandu." \
-  --noinput-text="___" \
-  --lock-text="" \
-  --lockfailed-text=""
+i3lock -i="$LOCK_IMG" 

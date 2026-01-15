@@ -4,7 +4,7 @@ IMG="/tmp/lockscreen_$(date +%H%M%S).png"
 import -window root "$IMG"
 i3lock -i "$IMG" \
     --ring-width=1 \
-    --radius=4 \
+    --radius=20 \
     --noinput-text="" \
     --verif-text="" \
     --wrong-text=""

@@ -67,5 +67,5 @@ while true; do
         *) echo "INVALID OPTION" ;;
     esac
 
-    read -r
+    read -rp "(PRESS ENTER) "
 done
