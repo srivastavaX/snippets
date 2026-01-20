@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
 #
-# Use BLOCK_INSTANCE if set, otherwise default to wlp3s0
+# USE BLOCK_INSTANCE IF SET, OTHERWISE DEFAULT TO wlp3s0
 device="${BLOCK_INSTANCE:-wlp3s0}"
-if [[ $(cat /sys/class/net/$device/operstate) == "up" ]]; then  # doesn’t guarantee it’s wireless
+if [[ $(cat /sys/class/net/$device/operstate) == "up" ]]; then  # DOESN’T GUARANTEE IT’S WIRELESS
     if [[ -d "/sys/class/net/${device}/wireless" ]]; then  
-        # this tells you the interface is actually a Wi-Fi interface
+        # THIS TELLS YOU THE INTERFACE IS ACTUALLY A Wi-Fi INTERFACE
         quality=$(grep ${device} /proc/net/wireless | awk '{ print int($3 * 100 / 70) }')
-        echo "<span rise='2pt' size='x-large'>󰤥 </span><span rise='3pt'>${quality}%</span>"
+        echo "<span rise='2pt' size='x-large'>󰤥 </span><span rise='3pt' size='large'>${quality}%</span>"
         if [[ "${quality}" -le 20 ]]; then
             exit 33
         fi
     else
-        # Ethernet
-        echo "<span rise='2pt' size='large'>󰤥</span> <span rise='3pt' >UP</span>"
+        # ETHERNET
+        echo "<span rise='2pt' size='x-large'>󰤥 </span><span rise='3pt' >UP</span>"
     fi
 else
-    echo "<span rise='2pt' size='large'>󰤥</span> <span rise='3pt'>DOWN</span>"
+    echo "<span rise='2pt' size='x-large'>󰤥 </span><span rise='3pt'>DOWN</span>"
     exit 33
 fi
 

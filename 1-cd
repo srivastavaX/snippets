@@ -6,14 +6,14 @@ selected_dir=$( fd -t d --follow --exclude '.*' \
     | fzf --height=60% --border --prompt="cd  : " )
 
 if [ -n "$selected_dir" ]; then
-    echo "Selected directry: '$selected_dir'" >&2
+    echo "SELECTED DIRECTRY: '$selected_dir'" >&2
 
     if [ -d "$selected_dir" ]; then
         printf 'cd %q\n' "$selected_dir"
     else
-        echo "Error: '$selected_dir' is not a valid directory" >&2
+        echo "ERROR: '$selected_dir' IS NOT A VALID DIRECTORY" >&2
     fi
 else
-    echo "No directory selected" >&2
+    echo "NO DIRECTORY SELECTED" >&2
 fi
 # https://www.nerdfonts.com/cheat-sheet -> 

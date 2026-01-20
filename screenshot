@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-ATTACH_DIR="$HOME/Zettelkasten/attachments"
-[[ ! -d "$ATTACH_DIR" ]] && mkdir -p "$ATTACH_DIR" && notify-send "Attachment folder created" "$ATTACH_DIR"
+ATTACH_DIR="$HOME/Zettelkasten/00 - attachments"
+[[ ! -d "$ATTACH_DIR" ]] && mkdir -p "$ATTACH_DIR" && notify-send "ATTACHMENT FOLDER CREATED" "$ATTACH_DIR"
 
 TIMESTAMP=$(date +%y-%m-%d_%H-%M-%S)
 OUTPUT_FILE="shot_$TIMESTAMP.png"
@@ -17,7 +17,7 @@ fi
 
 # compress and save
 magick "$TMP_FILE" -strip -define png:compression-level=9 "$ATTACH_DIR/$OUTPUT_FILE"
-notify-send "Screenshot saved" "$(basename "$OUTPUT_FILE")"
+notify-send "SCREENSHOT SAVED" "$(basename "$OUTPUT_FILE")"
 
 echo "![[$OUTPUT_FILE]]" | xclip -selection clipboard
 

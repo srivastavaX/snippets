@@ -1,31 +1,15 @@
 #!/usr/bin/env bash
-
 WALL_DIR="$HOME/Gallery/_wallpapers"
-CACHE="/tmp/wallpaper_index.txt"
 
 # Get sorted list of wallpapers
-WALLS=($(ls "$WALL_DIR"/*.{jpg,png,jpeg} 2>/dev/null | sort))
+#WALLS=($(ls "$WALL_DIR"/*.{jpg,png,jpeg} 2>/dev/null | sort))
+WALLS=($(ls "$WALL_DIR"/*.{jpg,png,jpeg} 2>/dev/null))
 
 # Exit if no wallpapers found
 [[ ${#WALLS[@]} -eq 0 ]] && exit 1
 
-# Read last index from cache
-if [[ -f "$CACHE" ]]; then
-    INDEX=$(cat "$CACHE")
-else
-    INDEX=0
-fi
+# Get random index
+INDEX=$((RANDOM % ${#WALLS[@]}))
 
 # Set wallpaper
 feh --bg-fill "${WALLS[$INDEX]}"
-
-
-case "$1" in
-    next)
-        INDEX=$(( (INDEX + 1) % ${#WALLS[@]} ))
-        ;;
-    prev)
-        INDEX=$(( (INDEX - 1) % ${#WALLS[@]} ))
-        ;;
-esac
-echo "$INDEX" > "$CACHE"
