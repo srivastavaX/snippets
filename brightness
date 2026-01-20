@@ -5,6 +5,10 @@ case "$1" in
         ;;
     down)
         brightnessctl set 5%-
-        ;;
 esac
+
+LABEL='󰃟 '
+[[ "$BLOCK_BUTTON" -eq 1 ]] && source /home/srivastava/repos/scripts/nightlight
+
+echo "<span size='x-large' rise='1pt'>$LABEL</span><span rise='2pt' size='large'>$(($(brightnessctl get) * 100 / $(brightnessctl max)))%</span>"
 pkill -RTMIN+2 i3blocks
