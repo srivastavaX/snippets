@@ -1,13 +1,20 @@
 #!/usr/bin/env bash
-# AC power status block
+# AC POWER STATUS BLOCK
 AC_PATH="/sys/class/power_supply/AC/online"
 
-if [[ -f "$AC_PATH" ]]; then
-    AC_STATUS=$(cat "$AC_PATH")
-    if [[ "$AC_STATUS" == "1" ]]; then
-        echo "<span foreground='#8fbcbb' background='#2e3440' size='x-large'></span><span background='#8fbcbb'> <span foreground='#111D13' size='x-large' rise='1pt'> </span><span foreground='#111D13' size='small' rise='3pt'> </span></span><span background='#8fbcbb' foreground='#2e3440' size='x-large'></span>"
-    else
-        echo "<span foreground='#D00000' background='#2e3440' size='x-large'></span><span background='#D00000'><span foreground='#FEEFDD' size='large' rise='1pt'> UNPLUGGED</span> </span><span background='#D00000' foreground='#2e3440' size='x-large'></span>"
-        # exit 33
-    fi
+# if [[ -f "$AC_PATH" ]]; then
+#     AC_STATUS=$(cat "$AC_PATH")
+#     if [[ "$AC_STATUS" == "1" ]]; then
+#         echo "<span foreground='#8fbcbb' background='#2e3440' size='x-large'></span><span background='#8fbcbb'> <span foreground='#111D13' size='x-large' rise='1pt'> </span><span foreground='#111D13' size='small' rise='3pt'> </span></span><span background='#8fbcbb' foreground='#2e3440' size='x-large'></span>"
+#     else
+#         echo "<span foreground='#D00000' background='#2e3440' size='x-large'></span><span background='#D00000'><span foreground='#FEEFDD' size='large' rise='1pt'> UNPLUGGED</span> </span><span background='#D00000' foreground='#2e3440' size='x-large'></span>"
+#         # exit 33
+#     fi
+# fi
+
+AC_STATUS=$(cat "$AC_PATH")
+if [[ "$AC_STATUS" == "1" ]]; then
+    echo "<span foreground='#8fbcbb' background='#2e3440' size='x-large'></span><span background='#8fbcbb'> <span foreground='#111D13' size='x-large' rise='1pt'> </span><span foreground='#111D13' size='medium' rise='3pt'> </span></span><span background='#8fbcbb' foreground='#2e3440' size='x-large'></span>"
+else
+    echo "<span foreground='#D00000' background='#2e3440' size='x-large'></span><span background='#D00000'><span foreground='#FEEFDD' size='large' rise='1pt'> UNPLUGGED</span> </span><span background='#D00000' foreground='#2e3440' size='x-large'></span>"
 fi
