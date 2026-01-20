@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+case "${BLOCK_BUTTON:-0}" in
+    1)
+        /home/srivastava/repos/scripts/lock &
+        ;;
+    3)
+        /home/srivastava/repos/scripts/lock
+        systemctl suspend
+        ;;
+esac
+echo "<span size='x-large'> </span>"
