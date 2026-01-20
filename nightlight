@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+STATE_FILE="${XDG_RUNTIME_DIR:-/tmp}/redshift_state"
+TEMP_WARM=3800
+TEMP_NORMAL=6500
+
+if [[ -n "$BLOCK_BUTTON" && "$BLOCK_BUTTON" -eq 1 ]]; then
+    # READ CURRENT STATE; DEFAULT TO "off" IF FILE DOESN'T EXIST
+    state=$(cat "$STATE_FILE" 2>/dev/null || echo "off")
+    if [[ "$state" == "on" ]]; then
+        # TURN OFF:
+        redshift -x >/dev/null 2>&1 || true
+        # true, HERE INSURES THAT EVEN IF REDSHIFT IS NOT RUNNING, THE SCRIPT CONTINUES
+        echo "off" > "$STATE_FILE"
+    else
+        # TURN ON:
+        redshift -O "$TEMP_WARM" >/dev/null 2>&1 &
+        echo "on" > "$STATE_FILE"
+    fi
+fi
