@@ -6,6 +6,6 @@
 #fi
 
 read -p "COMMIT-MESSAGE: " commitmessage
-git add "$1"
+git add "$@"
 git commit -m "$commitmessage"
 # git push
