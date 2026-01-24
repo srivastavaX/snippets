@@ -10,6 +10,7 @@ if [ -n "$selected_dir" ]; then
 
     if [ -d "$selected_dir" ]; then
         printf 'cd %q\n' "$selected_dir"
+        printf 'll'  # long-format-listing
     else
         echo "ERROR: '$selected_dir' IS NOT A VALID DIRECTORY" >&2
     fi
