@@ -1,4 +1,3 @@
-
 from pynput.mouse import Button, Controller as MouseController
 from pynput.keyboard import Listener, KeyCode
 import threading
@@ -14,9 +13,9 @@ def clicker():
     while not exit_flag:
         if clicking:
             mouse.click(Button.left, 1)
-            time.sleep(0.025)   # adjust click speed here
+            time.sleep(0.05)   # adjust click speed here
         else:
-            time.sleep(0.01)
+            time.sleep(0.09)
 
 def on_press(key):
     global clicking, exit_flag

@@ -2,9 +2,9 @@
 
 set -Eeuo pipefail
 
-ATTACH_DIR="$HOME/Zettelkasten/00 - attachments"
+ATTACH_DIR="$HOME/Zettelkasten/00 - attachments/college-attachments"
 TIMESTAMP=$(date +%y-%m-%d_%H-%M-%S)
-OUTPUT_FILE="ss_$TIMESTAMP.webp"
+OUTPUT_FILE="cs_$TIMESTAMP.webp"
 #TMP_FILE="/tmp/flameshot_$TIMESTAMP.png"
 TMP_FILE="$(mktemp --suffix=.png flameshot.XXXXXX)"
 

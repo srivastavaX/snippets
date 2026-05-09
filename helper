@@ -1,0 +1,180 @@
+#!/usr/bin/env bash
+
+set -e
+
+CMDS=()
+
+selected=$(printf '%s\n' "${CMDS[@]}" \
+    | fzf \
+        --prompt="run command ❯ " \
+        --height=50% \
+        --layout=reverse \
+        --border=rounded \
+        --pointer="" \
+        --color="fg:#cdd6f4,bg:#1e1e2e,hl:#89b4fa,fg+:#cdd6f4,bg+:#313244,hl+:#89dceb" \
+        --color="prompt:#cba6f7,pointer:#f38ba8,border:#6c7086" \
+        --bind="ctrl-c:abort,esc:abort" \
+
+BELOW CODE FROM CLAUDE
+
+# ============================================================
+#  gitf — fzf-powered git helper (zsh function)
+#  Add to ~/.zshrc via: source /path/to/gitf.zsh
+#  or paste directly into ~/.zshrc
+# ============================================================
+
+gitf() {
+    # ── must be inside a git repo ──────────────────────────
+    if ! git rev-parse --git-dir &>/dev/null; then
+        printf "\033[0;31m✗ Not inside a git repository\033[0m\n"
+        return 1
+    fi
+
+    local BRANCH
+    BRANCH=$(git branch --show-current 2>/dev/null || echo "detached")
+
+    local REMOTE
+    REMOTE=$(git remote 2>/dev/null | head -1)
+
+    # ── command definitions: "label|behavior|command" ──────
+    # behavior:
+    #   run    = execute immediately
+    #   buffer = prefill zsh readline buffer (user can edit + run)
+    #   pick   = needs extra fzf selection step before buffering
+    local -a CMDS
+    CMDS=(
+        "status        │ run    │ git status"
+        "diff          │ run    │ git diff"
+        "diff --staged │ run    │ git diff --staged"
+        "log (graph)   │ run    │ git log --oneline --graph --decorate -20"
+        "log (full)    │ run    │ git log --stat -5"
+        "─────── Staging ───────────────────────────────│──│──"
+        "add -p        │ run    │ git add -p"
+        "add file      │ pick   │ git add"
+        "add all       │ buffer │ git add ."
+        "restore file  │ pick   │ git restore"
+        "restore --staged │ pick │ git restore --staged"
+        "─────── Committing ─────────────────────────────│──│──"
+        "commit        │ buffer │ git commit -m \"\""
+        "commit --amend│ buffer │ git commit --amend"
+        "commit -a     │ buffer │ git commit -a -m \"\""
+        "─────── Branching ──────────────────────────────│──│──"
+        "branch list   │ run    │ git branch -vv"
+        "branch new    │ buffer │ git checkout -b "
+        "checkout      │ pick   │ git checkout"
+        "switch        │ pick   │ git switch"
+        "merge         │ pick   │ git merge"
+        "branch delete │ pick   │ git branch -d"
+        "─────── Remote ─────────────────────────────────│──│──"
+        "fetch         │ run    │ git fetch"
+        "pull          │ buffer │ git pull ${REMOTE} ${BRANCH}"
+        "push          │ buffer │ git push ${REMOTE} ${BRANCH}"
+        "push --force-with-lease │ buffer │ git push --force-with-lease ${REMOTE} ${BRANCH}"
+        "remote -v     │ run    │ git remote -v"
+        "─────── Stash ───────────────────────────────────│──│──"
+        "stash push    │ buffer │ git stash push -m \"\""
+        "stash list    │ run    │ git stash list"
+        "stash pop     │ run    │ git stash pop"
+        "stash drop    │ pick   │ git stash drop"
+        "─────── Misc ────────────────────────────────────│──│──"
+        "rebase -i     │ buffer │ git rebase -i HEAD~"
+        "reset HEAD~   │ buffer │ git reset HEAD~"
+        "reset --hard  │ buffer │ git reset --hard "
+        "cherry-pick   │ pick   │ git cherry-pick"
+        "tag           │ buffer │ git tag -a  -m \"\""
+        "reflog        │ run    │ git reflog --oneline -20"
+    )
+
+    # ── main fzf pick ───────────────────────────────────────
+    local selected
+    selected=$(printf '%s\n' "${CMDS[@]}" \
+        | grep -v "^─" \
+        | column -t -s '│' \
+        | fzf \
+            --height=60% --layout=reverse --border=rounded \
+            --prompt="  git ❯ " --pointer="▶" \
+            --header="$(printf "\033[0;36m branch:\033[0m %s   \033[0;36mremote:\033[0m %s" "$BRANCH" "${REMOTE:-none}")" \
+            --preview='
+                cmd=$(echo {} | awk -F"|" "{print \$3}" | xargs)
+                echo "► $cmd"
+                echo ""
+                case "$cmd" in
+                    *"git status"*)   git status --short ;;
+                    *"git log"*)      git log --oneline --graph -10 ;;
+                    *"git diff"*)     git diff --stat ;;
+                    *"git branch"*)   git branch -vv ;;
+                    *"git stash list"*) git stash list ;;
+                    *"git remote"*)   git remote -v ;;
+                    *"git reflog"*)   git reflog --oneline -10 ;;
+                    *)                git status --short ;;
+                esac
+            ' \
+            --preview-window=right:40%:wrap \
+            --bind="ctrl-c:abort,esc:abort" \
+            --no-multi)
+
+    [[ -z "$selected" ]] && return 0
+
+    # ── parse fields ────────────────────────────────────────
+    local label behavior cmd
+    label=$(echo "$selected"   | awk -F'|' '{print $1}' | xargs)
+    behavior=$(echo "$selected" | awk -F'|' '{print $2}' | xargs)
+    cmd=$(echo "$selected"     | awk -F'|' '{print $3}' | xargs)
+
+    # ── handle 'pick' — needs a secondary fzf selection ────
+    if [[ "$behavior" == "pick" ]]; then
+        local pick_item
+
+        case "$label" in
+            "add file")
+                pick_item=$(git diff --name-only; git ls-files --others --exclude-standard) ;;
+            "restore file"|"restore --staged")
+                pick_item=$(git diff --name-only) ;;
+            "checkout"|"switch")
+                pick_item=$(git branch --all --format='%(refname:short)') ;;
+            "merge"|"branch delete")
+                pick_item=$(git branch --format='%(refname:short)') ;;
+            "cherry-pick")
+                pick_item=$(git log --oneline -30) ;;
+            "stash drop")
+                pick_item=$(git stash list) ;;
+        esac
+
+        if [[ -z "$pick_item" ]]; then
+            printf "\033[0;33m⚠ Nothing available to pick\033[0m\n"
+            return 0
+        fi
+
+        local picked
+        picked=$(echo "$pick_item" \
+            | fzf --height=40% --layout=reverse --border=rounded \
+                  --prompt="  select ❯ " --pointer="▶" \
+                  --header="$label" \
+                  --bind="ctrl-c:abort,esc:abort")
+
+        [[ -z "$picked" ]] && return 0
+
+        # for cherry-pick and stash drop, extract the hash/ref
+        if [[ "$label" == "cherry-pick" ]]; then
+            picked=$(echo "$picked" | awk '{print $1}')
+        elif [[ "$label" == "stash drop" ]]; then
+            picked=$(echo "$picked" | awk -F: '{print $1}')
+        fi
+
+        cmd="$cmd $picked"
+        behavior="buffer"   # after picking, always let user review
+    fi
+
+    # ── execute ─────────────────────────────────────────────
+    if [[ "$behavior" == "run" ]]; then
+        printf "\n\033[0;32m▶\033[0m \033[1m%s\033[0m\n\n" "$cmd"
+        eval "$cmd"
+        printf "\n\033[2mPress Enter to continue...\033[0m"; read -r
+        gitf   # loop back to menu
+
+    elif [[ "$behavior" == "buffer" ]]; then
+        # print -z writes to zsh readline input buffer
+        # user sees the command, can edit it, then hit Enter
+        print -z "$cmd"
+    fi
+}

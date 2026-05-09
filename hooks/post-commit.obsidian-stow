@@ -1,0 +1,9 @@
+#!/bin/bash
+# post-commit Git hook for stowing new files
+
+SNIPPETS_DIR="$HOME/repos/obsidian-css-snippets"
+TARGET_DIR="$HOME/Zettelkasten/.obsidian/snippets"
+
+echo "STOWING OBSIDIAN SNIPPETS..."
+stow -R -v -d "$SNIPPETS_DIR" -t "$TARGET_DIR"
+echo "DONE SYMLINKING"

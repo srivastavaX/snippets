@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+
+STATE_FILE="/tmp/pomodoro"
+WORK_MINS=45
+SIGNAL=8
+
+now() {
+    date +%s
+}
+
+read_state() {
+    if [[ -f "$STATE_FILE" ]]; then
+        read -r STATUS END_EPOCH < "$STATE_FILE"
+    else
+        STATUS="idle"
+        END_EPOCH=0
+    fi
+}
+
+write_state() {
+    echo "$1 $2" > "$STATE_FILE"
+}
+
+refresh() {
+    pkill -RTMIN+$SIGNAL i3blocks 2>/dev/null
+}
+
+fmt_time() {
+    local secs=$1
+    (( secs < 0 )) && secs=0
+    printf "%02d:%02d" $((secs / 60)) $((secs % 60))
+}
+#fmt_time() {
+#    local secs=$1
+#    printf "%02d:%02d" $(( secs / 60 )) $(( secs % 60 ))
+#}
+
+read_state
+current=$(now)
+
+
+case $BLOCK_BUTTON in
+    1) 
+        case "$STATUS" in
+            idle)
+                end=$(( current + WORK_MINS * 60 ))
+                write_state "running" "$end"
+                ;;
+            running)
+                remaining=$(( END_EPOCH - current ))
+                write_state "paused" "$remaining"
+                ;;
+            paused)
+                new_end=$(( current + END_EPOCH ))
+                write_state "running" "$new_end"
+                ;;
+            done)
+                end=$(( current + WORK_MINS * 60 ))
+                write_state "running" "$end"
+                ;;
+        esac
+        refresh
+        exit
+        ;;
+    3)  
+        write_state "idle" 0
+        read_state
+        refresh
+        ;;
+esac
+
+case $STATUS in
+    running)
+        remaining=$(( END_EPOCH - current ))
+        if [[ $remaining -le 0 ]]; then
+            write_state "done" 0
+            notify-send "POMODORO" "TIME'S UP! TAKE A BREAK."
+            echo "<span foreground='#8fbcbb' background='#2e3440' size='x-large'></span><span background='#8fbcbb' foreground='#04151f'> <span size='large'>󰔛 </span><span>DONE!</span> </span><span foreground='#2e3440' background='#8fbcbb' size='x-large'></span>"
+            exit
+        fi
+
+        echo "<span size='large'>󰔚 </span>  <span>$(fmt_time $remaining)</span>"
+        ;;
+    paused)
+        echo "<span size='large'>󰏤</span>  <span>$(fmt_time $END_EPOCH)</span>"
+        ;;
+    done)
+        echo "<span size='large'>󰔛 </span>  <span>DONE!</span>"
+        ;;
+    idle)
+        echo "<span size='large'>󰔚</span>  <span>45 mins</span>"
+        ;;
+esac

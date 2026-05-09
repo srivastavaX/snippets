@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+MAX_LEN=28
+
+case $BLOCK_BUTTON in
+    1) playerctl play-pause ;;
+esac
+
+status=$(playerctl status 2>/dev/null)
+
+if [[ -z "$status" ]]; then
+    echo "<span size='large'>󰽴</span>"
+    exit 0
+fi
+
+title=$(playerctl metadata title 2>/dev/null)
+
+[[ ${#title} -gt $MAX_LEN ]] && title="${title:0:$MAX_LEN}…"
+
+icon="󰏤"
+[[ "$status" == "Playing" ]] && icon="󰎈"
+
+echo "<span size='large'>${icon}</span>  <span>${title}</span>"

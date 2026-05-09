@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+declare -A cmds
+
+# ── ADD YOUR ENTRIES HERE ──────────────────────────
+cmds["Fetch specific columns"]="
+SELECT col1, col2
+FROM table_name
+WHERE condition;"
+
+cmds["Inner join"]="
+SELECT a.col1, b.col2
+FROM table_a AS a
+INNER JOIN table_b AS b
+  ON a.id = b.a_id;"
+
+cmds["Group by with having"]="
+SELECT department, COUNT(*) AS headcount
+FROM employees
+GROUP BY department
+HAVING COUNT(*) > 5;"
+# ──────────────────────────────────────────────────
+
+selected=$(printf '%s\n' "${!cmds[@]}" | fzf)
+
+[[ -z "$selected" ]] && exit 0
+
+echo "${cmds[$selected]}" | wl-copy
