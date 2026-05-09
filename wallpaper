@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+WALL_DIR="$HOME/Gallery/_wallpapers"
+
+# Get sorted list of wallpapers
+#WALLS=($(ls "$WALL_DIR"/*.{jpg,png,jpeg} 2>/dev/null | sort))
+WALLS=($(ls "$WALL_DIR"/*.{jpg,png,jpeg} 2>/dev/null))
+
+# Exit if no wallpapers found
+[[ ${#WALLS[@]} -eq 0 ]] && exit 1
+
+# Get random index
+INDEX=$((RANDOM % ${#WALLS[@]}))
+
+# Set wallpaper
+feh --bg-fill "${WALLS[$INDEX]}"

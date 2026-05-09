@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+ICON=""
+case "$1" in
+    up)
+        brightnessctl set +4%
+        ;;
+    down)
+        brightnessctl set 4%-
+esac
+
+LABEL='󰃟 '
+[[ "$BLOCK_BUTTON" -eq 1 ]] && source nightlight
+
+echo "<span size='x-large' rise='1pt'>$LABEL</span><span rise='2pt' size='large'>$(($(brightnessctl get) * 100 / $(brightnessctl max)))%</span>"
+pkill -RTMIN+2 i3blocks

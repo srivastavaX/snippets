@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+ATTACH_DIR="$HOME/Zettelkasten/00 - attachments/college-attachments"
+TIMESTAMP=$(date +%y-%m-%d_%H-%M-%S)
+OUTPUT_FILE="cs_$TIMESTAMP.webp"
+#TMP_FILE="/tmp/flameshot_$TIMESTAMP.png"
+TMP_FILE="$(mktemp --suffix=.png flameshot.XXXXXX)"
+
+[[ ! -d "$ATTACH_DIR" ]] && mkdir -p "$ATTACH_DIR" && notify-send "ATTACHMENT FOLDER CREATED" "$ATTACH_DIR"
+
+# screenshot
+if ! flameshot gui --raw > "$TMP_FILE"; then
+    notify-send "SCREENSHOT FAILED!"
+    exit 1
+fi
+
+#if [[ ! -s "$TMP_FILE" ]]; then
+#    notify-send "NO IMAGE CAPTURED!"
+#    rm -f "$TMP_FILE"
+#    exit 1
+#fi
+cleanup() {
+    [[ -f "$TMP_FILE" ]] && rm -f "$TMP_FILE"
+}
+trap cleanup EXIT INT TERM
+
+# compress and save
+magick "$TMP_FILE" \
+    -strip \
+    -define webp:method=6 \
+    -define webp:lossless=false \
+    -quality 70 \
+    "$ATTACH_DIR/$OUTPUT_FILE"
+notify-send "SCREENSHOT SAVED" "$(basename "$OUTPUT_FILE")"
+
+echo "![[$OUTPUT_FILE]]" | xclip -selection clipboard
+

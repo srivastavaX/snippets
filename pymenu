@@ -1,0 +1,186 @@
+#!/usr/bin/env bash
+
+set -e
+
+RED=$'\033[0;31m'; GREEN=$'\033[0;32m'; YELLOW=$'\033[1;33m'
+CYAN=$'\033[0;36m'; BOLD=$'\033[1m'; DIM=$'\033[2m'; RESET=$'\033[0m'
+
+#LOCAL_VENV="$(pwd)/.venv"
+
+FZF_OPTS=(
+    --prompt="  ❯ "
+    --height=40%
+    --layout=reverse
+    --border=rounded
+    --pointer=""
+    --color="fg:#cdd6f4,bg:#1e1e2e,hl:#89b4fa,fg+:#cdd6f4,bg+:#313244,hl+:#89dceb"
+    --color="prompt:#cba6f7,pointer:#f38ba8,border:#6c7086"
+    --cycle
+    --bind="ctrl-c:abort,esc:abort"
+)
+
+fzf_pick() {
+    fzf "${FZF_OPTS[@]}" "$@"
+}
+
+run_cmd() {
+    printf "\n%s%s %s%s%s%s\n\n" "$GREEN" "$RESET" "$BOLD" "$GREEN" "$*" "$RESET"
+    "$@"
+}
+
+
+do_uninstall() {
+    local ver
+    ver=$(pyenv versions --bare | fzf_pick --header="${BOLD}${CYAN}------- UNINSTALL SPECIFIC VERSION${RESET}")
+    [[ -z "$ver" ]] && return
+
+    ver="${ver##* }"
+    ver="${ver%% *}"
+
+    printf "\n%s%sABOUT TO UNINSTALL:%s %s%s%s\n" "$RED" "$BOLD" "$RESET" "$BOLD" "$ver" "$RESET"
+    read -rp "    ${YELLOW}CONFIRM? [y/N]${RESET}: " confirm
+    [[ "$confirm" =~ ^[Yy]$ ]] && run_cmd pyenv uninstall "$ver"
+    printf "%sPRESS ENTER TO CONTINUE...%s" "$DIM" "$RESET"; read -r
+}
+
+do_list_installed() {
+    local ver
+    ver=$(pyenv versions | fzf_pick --header="${YELLOW}------- INSTALLED VERSIONS${RESET}")
+    [[ -z "$ver" ]] && return
+
+    ver="${ver##* }"
+    ver="${ver%% *}"
+
+    printf "\nVersion: %s%s%s%s" "$CYAN" "$BOLD" "$ver" "$RESET"
+    printf "\n%sPRESS ENTER TO CONTINUE...%s" "$DIM" "$RESET"; read -r
+}
+ 
+
+do_list_installable() {
+    local ver
+    ver=$(pyenv install --list | grep -v "^Available" | sed 's/^[[:space:]]*//' \
+        | fzf_pick --header="${YELLOW}------- ALL INSTALLABLE VERSIONS${RESET}" --height=70%)
+    [[ -z "$ver" ]] && return
+
+    printf "\nSELECTED VERSION: %s%s%s%s\n" "$BOLD" "$CYAN" "$ver" "$RESET"
+    read -rp "    INSTALL NOW? [y/N]: " confirm
+    [[ "$confirm" =~ ^[Yy]$ ]] && run_cmd pyenv install "$ver" && pyenv rehash
+    printf "%sPRESS ENTER TO CONTINUE...%s" "$DIM" "$RESET"; read -r
+}
+
+do_set_global() {
+    local ver
+    ver=$(pyenv versions | fzf_pick --header="${YELLOW}------- SET GLOBAL PYTHON VERSION  ${RESET}" \
+        --preview='echo "CURRENT GLOBAL: $(pyenv global)"' \
+        --preview-window=bottom:3)
+    [[ -z "$ver" ]] && return
+
+    ver="${ver##* }"
+    ver="${ver%% *}"
+
+    run_cmd pyenv global "$ver" 2>/dev/null
+    printf "%sPRESS ENTER TO CONTINUE...%s" "$DIM" "$RESET"; read -r
+}
+
+do_set_shell() {
+    local ver
+    ver=$(pyenv versions | fzf_pick --header="${CYAN}------- SET CURRENT SHELL VERSION${RESET}")
+    [[ -z "$ver" ]] && return
+
+    ver="${ver##* }"
+    ver="${ver%% *}"
+
+    run_cmd pyenv shell "$ver" 2>/dev/null
+    printf "%sPRESS ENTER TO CONTINUE...%s" "$DIM" "$RESET"; read -r
+}
+
+do_set_local() {
+    local ver
+    ver=$(pyenv versions --bare | fzf_pick --header="${YELLOW}------- SET LOCAL VERSION FOR${RESET}" \
+        --preview='echo "CURRENT LOCAL: $(cat .python-version 2>/dev/null || echo none)" && echo "CURRENT DIRECTORY: $(pwd 2>/dev/null)"' \
+        --preview-window=bottom:3)
+    [[ -z "$ver" ]] && return
+
+    #ver=$(echo "$ver" | tr -d '[:space:]')
+    ver="${ver##* }"
+    ver="${ver%% *}"
+
+    run_cmd pyenv local "$ver" 2>/dev/null
+    printf "%s  -> UPDATED .python-version in %s%s" "$DIM" "$(pwd)" "$RESET"
+    printf "\n\n%sPRESS ENTER TO CONTINUE...%s" "$DIM" "$RESET"; read -r
+}
+
+do_create_venv() {
+    local venv_dir ver python_path
+    
+    ver=$(pyenv versions | fzf_pick --header="${YELLOW}------- SELECT PYTHON VERSION${RESET}")
+    [[ -z "$ver" ]] && return
+
+    ver="${ver##* }"
+    ver="${ver%% *}"
+
+    read -rp "ENTER VENV NAME (DEFAULT: .venv): " venv_dir
+    venv_dir=${venv_dir:-.venv}
+
+    python_path="$(pyenv prefix "$ver")/bin/python"
+    [[ ! -x "$python_path" ]] && return
+
+    run_cmd "$python_path" -m venv "$venv_dir"
+    printf "%sPRESS ENTER TO CONTINUE...%s" "$DIM" "$RESET"; read -r
+}
+
+do_info() {
+#    printf "\n%spyenv root%s          :%s" "$CYAN" "$RESET" "$(pyenv root)"
+#    printf "\n%spyenv --version%s     :%s" "$CYAN" "$RESET" "$(pyenv --version)"
+    printf "\n%spyenv version%s         :%s" "$CYAN" "$RESET" "$(pyenv version)"
+    printf "\n%spyenv which python%s    :%s" "$CYAN" "$RESET" "$(pyenv which python 2>/dev/null || echo 'none')"
+    printf "\n%scat .python-version%s   :%s" "$CYAN" "$RESET" "$(cat .python-version 2>/dev/null || echo 'not set')"
+    printf "\n%spyenv global%s          :%s" "$CYAN" "$RESET" "$(pyenv global 2>/dev/null)"
+}
+
+
+MENU_ITEMS=(
+    "SET LOCAL"
+    "SET GLOBAL"
+    "SET SHELL"
+    "LIST INSTALLED VERSIONS"
+    "INSTALL A VERSION"
+    "REMOVE SPECIFIC VERSION"
+    "CREATE VIRTUALENV"
+    "STATUS"
+    "EXIT"
+)
+
+action=$(printf '%s\n' "${MENU_ITEMS[@]}" \
+    | fzf_pick --header="${YELLOW}------- PYENV HELPER${RESET}")
+[[ -z "$action" ]] && return
+
+case "$action" in
+    "INSTALL A VERSION")
+        do_list_installable
+        ;;
+    "LIST INSTALLED VERSIONS")
+        do_list_installed
+        ;;
+    "SET LOCAL")
+        do_set_local
+        ;;
+    "SET GLOBAL")
+        do_set_global
+        ;;
+    "SET SHELL")
+        do_set_shell
+        ;;
+    "REMOVE SPECIFIC VERSION")
+        do_uninstall
+        ;;
+    "CREATE VIRTUALENV")
+        do_create_venv
+        ;;
+    "STATUS")
+        do_info
+        ;;
+    "EXIT")
+        exit 0
+        ;;
+esac

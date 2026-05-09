@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+#
+# USE BLOCK_INSTANCE IF SET, OTHERWISE DEFAULT TO wlp3s0
+device="${BLOCK_INSTANCE:-wlp3s0}"
+
+#case $BLOCK_BUTTON in
+#    1) networkmanager_dmenu >/dev/null 2>&1 & ;;  # Left click
+#esac
+
+case $BLOCK_BUTTON in
+    1) alacritty --title "nmtui-float" -e nmtui & ;;
+esac
+
+
+#[[ "$BLOCK_BUTTON" == "3" ]] && nmcli radio wifi off
+#[[ "$BLOCK_BUTTON" == "2" ]] && alacritty -e nmtui
+
+
+if [[ $(cat /sys/class/net/$device/operstate) == "up" ]]; then  # DOESN’T GUARANTEE IT’S WIRELESS
+    if [[ -d "/sys/class/net/${device}/wireless" ]]; then  
+        # THIS TELLS YOU THE INTERFACE IS ACTUALLY A Wi-Fi INTERFACE
+        quality=$(grep ${device} /proc/net/wireless | awk '{ print int($3 * 100 / 70) }')
+        #echo "<span rise='2pt' size='x-large'>󰤥 </span><span rise='3pt' size='large'>${quality}%</span>"
+        echo "<span rise='2pt' size='x-large'>󰤥 </span><span rise='3pt' size='large'>UP</span>"
+        [[ "${quality}" -le 20 ]] && exit 33
+    else
+        # ETHERNET
+        echo "<span rise='2pt' size='x-large'> </span><span rise='3pt' >UP</span>"
+    fi
+else
+    echo "<span rise='2pt' size='x-large'>󰤭 </span><span rise='3pt'>DOWN</span>"
+    exit 33
+fi

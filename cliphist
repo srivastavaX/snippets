@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+
+HISTFILE="$HOME/.cache/cliphist"
+PLACEHOLDER="<NEWLINE>"
+MAX_ENTRIES=1000
+
+#[ -f "$HISTFILE" ] || notify-send "Creating $HISTFILE"; touch $HISTFILE
+if [ ! -f "$HISTFILE" ]; then
+    touch "$HISTFILE"
+    notify-send "Created Clipboard History File: $HISTFILE"
+fi
+
+copy_stdout_to_clip() {
+#   CLIP=$(xclip -i -f -selection clipboard 2>/dev/null)
+    CLIP=$(cat)
+}
+
+copy_primary_to_clip() {
+    CLIP=$(xclip -o -selection primary 2>/dev/null)  # reads
+    echo "$CLIP" | xclip -i -selection secondary
+}
+
+write() {
+    [ -z "$CLIP" ] && exit 0  # dont continue if nothing is highlighted
+    echo "$CLIP" | xclip -i -selection clipboard  # copy to standard clipboard
+
+    ENTRY=$(echo "$CLIP" | sed ':a;N;$!ba;s/\n/'"$PLACEHOLDER"'/g')  # replaces newline
+    
+    TMP=$(mktemp)
+    {
+        grep -Fxv "$ENTRY" "$HISTFILE" 2>/dev/null
+        echo "$ENTRY"
+    } | tail -n "$MAX_ENTRIES" > "$TMP"
+    mv "$TMP" "$HISTFILE"
+    # removes duplicates
+    # append newclipboard entry
+    # enforcing history size limit
+
+    notify-send "Added to clipboard" "$(echo "$CLIP" | head -n4)" 
+}
+
+show_menu() {
+    [ -f "$HISTFILE" ] || exit 0
+#   ENTRY=$(tac "$HISTFILE" | sed "s/$PLACEHOLDER/\n/g" | rofi -dmenu -i -p " Clipboard" -lines 15 -width 50)
+    ENTRY=$(tac "$HISTFILE" | rofi -dmenu -i -p " Clipboard" -lines 15 -width 50)
+
+#   [ -n "$ENTRY" ] && echo "$ENTRY" | xclip -i -selection clipboard && dunstify -t 2000 " Copied to CLipboard"
+    if [ -n "$ENTRY" ]; then
+        DECODE=$(echo "$ENTRY" | sed "s/$PLACEHOLDER/$(printf '\n')/g")
+        printf '%s' "$DECODE" | xclip -i -selection secondary
+        dunstify -t 2000 " Copied to CLipboard"
+    fi
+}
+
+case "$1" in
+    add) copy_primary_to_clip && write ;;
+    out) copy_stdout_to_clip && write ;;
+    menu) show_menu ;;
+#   *) printf "Usage: %s {add|out|menu}\n" "$0" ;;
+    *) printf "Usage: cliphist {add|out|menu}\n" "$0" ;;
+esac

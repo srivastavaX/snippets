@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPTS_DIR="$HOME/repos/scripts"
+CURRENT_DIR="$(pwd)"
+
+# # EXIT IF DIRECTORY DOESN'T EXIST
+# [[ -d "$SCRIPTS_DIR" ]] || {
+#   echo "SCRIPTS DIRECTORY NOT FOUND: $SCRIPTS_DIR"
+#   exit 1
+# }
+
+# # CHECK IF FZF IS INSTALLED
+# if ! command -v fzf &> /dev/null; then
+#     echo -e "${RED}ERROR: fzf IS NOT INSTALLED.${NC}"
+#     echo "INSTALL IT"
+#     exit 1
+# fi
+
+# SELECT A SCRIPT
+script=$(find "$SCRIPTS_DIR" -maxdepth 1 -type f -executable -printf '%f\n' \
+    | fzf --prompt="EXECUTE: "\
+          --height=50% --border \
+          --header="SCRIPTS IN: $SCRIPTS_DIR | RUNNING IN: $CURRENT_DIR" \
+          --info=inline )
+
+# EXIT IF NOTHING SELECTED
+[[ -n "$script" ]] || exit 0
+
+# EXECUTE THE SELECTION
+"$SCRIPTS_DIR/$script"

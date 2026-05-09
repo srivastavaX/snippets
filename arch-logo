@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+LOCK_SCRIPT="${HOME}/repos/scripts/lock"
+
+case "${BLOCK_BUTTON:-0}" in
+    1)
+        [[ -x "$LOCK_SCRIPT" ]] && "$LOCK_SCRIPT"
+        ;;
+#    3)
+#        [[ -x "$LOCK_SCRIPT" ]] && "$LOCK_SCRIPT" && systemctl suspend
+#        ;;
+esac
+echo "<span size='x-large'> </span>"
