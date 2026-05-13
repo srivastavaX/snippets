@@ -1,31 +1,29 @@
 #!/usr/bin/env bash
 
-WALLPAPER="${1:-$HOME/Media/Wallpapers/lock.jpg}"
-LOCK_IMG="${XDG_RUNTIME_DIR:-/tmp}/lockscreen_wallpaper.png"
+LOCK_IMG="${XDG_RUNTIME_DIR:-/tmp}/lockscreen_shot.png"
 
 get_resolution() {
     xrandr | awk '/\*/{print $1; exit}'
 }
 
-generate_lock_image() {
-    local res
+take_screenshot() {
+    local res w h
     res=$(get_resolution)
-
-    local w h
     w="${res%x*}"
     h="${res#*x}"
 
-    magick "$WALLPAPER"          \
-        -resize "${w}x${h}^"     \
-        -gravity Center          \
-        -extent "${w}x${h}"      \
+    # maim: fast, no cursor, exact dimensions
+    maim --geometry="${w}x${h}+0+0" "$LOCK_IMG"
+
+    # Blur + dim — adjust sigma (12) and colorize (40) to taste
+    magick "$LOCK_IMG"                  \
+        -blur 0x9                      \
+        -fill black                     \
+        -colorize 40                    \
         PNG:"$LOCK_IMG"
 }
 
-# Regenerate only if source is newer than cached image
-if [[ ! -f "$LOCK_IMG" ]] || [[ "$WALLPAPER" -nt "$LOCK_IMG" ]]; then
-    generate_lock_image
-fi
+take_screenshot
 
 i3lock                              \
     --image="$LOCK_IMG"             \
@@ -33,11 +31,11 @@ i3lock                              \
     --ignore-empty-password         \
     --radius=90                     \
     --ring-width=4                  \
-    --inside-color=00000066         \
-    --ring-color=689d6aff           \
-    --insidever-color=689d6a44      \
+    --inside-color=00000000         \
+    --ring-color=689d6a88           \
+    --insidever-color=689d6a22      \
     --ringver-color=689d6aff        \
-    --insidewrong-color=cc241d44    \
+    --insidewrong-color=cc241d22    \
     --ringwrong-color=cc241dff      \
     --keyhl-color=ebdbb2ff          \
     --bshl-color=fabd2fff           \
@@ -52,3 +50,6 @@ i3lock                              \
     --verif-text=""                 \
     --wrong-text=""                 \
     --noinput-text=""
+
+# Runs after unlock — nofork blocks until i3lock exits
+rm -f "$LOCK_IMG"
