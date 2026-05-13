@@ -1,15 +1,25 @@
 #!/usr/bin/env bash
-ICON=""
+
+STATE_FILE="${XDG_RUNTIME_DIR:-/tmp}/redshift_state"
+
 case "$1" in
-    up)
-        brightnessctl set +4%
-        ;;
-    down)
-        brightnessctl set 4%-
+    up) brightnessctl set +4% -q ;;
+    down) brightnessctl set 4%- -q ;;
 esac
 
-LABEL='󰃟 '
-[[ "$BLOCK_BUTTON" -eq 1 ]] && source nightlight
+#[[ "${BLOCK_BUTTON}" == "1" ]] && "$SCRIPTS/nightlight"
+case "$BLOCK_BUTTON" in
+    4) brightnessctl set +4% -q ;;   # scroll up
+    5) brightnessctl set 4%- -q ;;   # scroll down
+    1) "$SCRIPTS/nightlight"  ;;
+esac
 
-echo "<span size='x-large' rise='1pt'>$LABEL</span><span rise='2pt' size='large'>$(($(brightnessctl get) * 100 / $(brightnessctl max)))%</span>"
-pkill -RTMIN+2 i3blocks
+#bri=$(brightnessctl -m | awk -F',' '{gsub(/%/,"",$3); print $3}')
+bri=$(($(brightnessctl get) * 100 / $(brightnessctl max)))
+
+state=$(cat "$STATE_FILE" 2>/dev/null || echo "off")
+[[ "$state" == "on" ]] && LABEL='󰖔 ' || LABEL='󰃟 '
+
+echo "<span size='x-large' rise='1pt'>$LABEL</span><span rise='2pt' size='large'>${bri}%</span>"
+
+[[ -n "$1" ]] && pkill -RTMIN+2 i3blocks

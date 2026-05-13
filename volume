@@ -2,24 +2,22 @@
 # if [[ -n "$BLOCK_BUTTON" && "$BLOCK_BUTTON" -eq 1 ]]; then
 ICON=""
 
-if [[ "$BLOCK_BUTTON" -eq 1 ]]; then
-    pactl set-sink-mute @DEFAULT_SINK@ toggle
-fi
-
 case "$1" in
-    up)
-        pactl set-sink-volume @DEFAULT_SINK@ +4%
-        ;;
-    down)
-        pactl set-sink-volume @DEFAULT_SINK@ -4%
-        ;;
-    toggle)
-        pactl set-sink-mute @DEFAULT_SINK@ toggle
-        ;;
+    up)     pactl set-sink-volume @DEFAULT_SINK@ +4%    ;;
+    down)   pactl set-sink-volume @DEFAULT_SINK@ -4%    ;;
+    toggle) pactl set-sink-mute   @DEFAULT_SINK@ toggle ;;
 esac
 
-NUM=$(pactl get-sink-volume @DEFAULT_SINK@ | awk '{print $5; exit}')
-MUTED=$(pactl get-sink-mute @DEFAULT_SINK@ | awk '{print $2}')
+# From i3blocks mouse interaction
+case "$BLOCK_BUTTON" in
+    4) pactl set-sink-volume @DEFAULT_SINK@ +4%    ;;   # scroll up
+    5) pactl set-sink-volume @DEFAULT_SINK@ -4%    ;;   # scroll down
+    1) pactl set-sink-mute   @DEFAULT_SINK@ toggle ;;   # left click mute
+esac
+
+NUM=$(awk '/Volume:/{gsub(/%/,"",$5); print $5"%"}' <<< "$(pactl get-sink-volume @DEFAULT_SINK@)")
+MUTED=$(awk '{print $2}' <<< "$(pactl get-sink-mute @DEFAULT_SINK@)")
+
 
 if [[ $MUTED == "yes" ]]; then
     echo "<span foreground='#D00000' background='#2e3440' size='x-large'>${ICON}</span><span background='#D00000' foreground='#FEEFDD'> <span size='x-large'> </span> <span size='large' rise='1pt'>$NUM</span> </span><span background='#D00000' foreground='#2e3440' size='x-large'>${ICON}</span>"
@@ -27,4 +25,4 @@ else
     echo "<span foreground='#8fbcbb' background='#2e3440' size='x-large'>${ICON}</span><span background='#8fbcbb'> <span size='x-large'> </span> <span size='large' rise='1pt'>$NUM</span> </span><span background='#8fbcbb' foreground='#2e3440' size='x-large'>${ICON}</span>"
 fi
 
-pkill -RTMIN+10 i3blocks
+[[ -n "$1" ]] && pkill -RTMIN+10 i3blocks

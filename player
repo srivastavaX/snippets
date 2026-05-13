@@ -1,23 +1,28 @@
 #!/usr/bin/env bash
-
-MAX_LEN=28
+SIGNAL=9
+MAX_LEN=22
 
 case $BLOCK_BUTTON in
-    1) playerctl play-pause ;;
+    1) playerctl play-pause; pkill -RTMIN+$SIGNAL i3blocks 2>/dev/null; exit ;;
+    4) playerctl previous;   pkill -RTMIN+$SIGNAL i3blocks 2>/dev/null; exit ;;
+    5) playerctl next;       pkill -RTMIN+$SIGNAL i3blocks 2>/dev/null; exit ;;
 esac
 
-status=$(playerctl status 2>/dev/null)
+STATUS=$(playerctl status 2>/dev/null) || exit 0
 
-if [[ -z "$status" ]]; then
-    echo "<span size='large'>󰽴</span>"
-    exit 0
-fi
+TITLE=$(playerctl metadata title 2>/dev/null)
+[[ ${#TITLE} -gt $MAX_LEN ]] && TITLE="${TITLE:0:$MAX_LEN}…"
 
-title=$(playerctl metadata title 2>/dev/null)
+case $STATUS in
+    Playing)
+        ICON="󰐊"
+        ;;
+    Paused)
+        ICON="󰏤"
+        ;;
+    *)
+        exit 0
+        ;;
+esac
 
-[[ ${#title} -gt $MAX_LEN ]] && title="${title:0:$MAX_LEN}…"
-
-icon="󰏤"
-[[ "$status" == "Playing" ]] && icon="󰎈"
-
-echo "<span size='large'>${icon}</span>  <span>${title}</span>"
+echo "<span foreground='#8fbcbb'>${ICON} ${TITLE}</span>"
