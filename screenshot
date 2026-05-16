@@ -2,7 +2,7 @@
 
 set -Eeuo pipefail
 
-ATTACH_DIR="$HOME/Zettelkasten/00 - attachments"
+ATTACH_DIR="$NOTES/00 - attachments"
 TIMESTAMP=$(date +%y-%m-%d_%H-%M-%S)
 OUTPUT_FILE="ss_$TIMESTAMP.webp"
 #TMP_FILE="/tmp/flameshot_$TIMESTAMP.png"
@@ -33,7 +33,7 @@ magick "$TMP_FILE" \
     -define webp:lossless=false \
     -quality 70 \
     "$ATTACH_DIR/$OUTPUT_FILE"
-notify-send "SCREENSHOT SAVED" "$(basename "$OUTPUT_FILE")"
+notify-send "NOTE TAKEN" "$(basename "$OUTPUT_FILE")"
 
 echo "![[$OUTPUT_FILE]]" | xclip -selection clipboard
 

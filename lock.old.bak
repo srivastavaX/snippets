@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-
-IMG="$HOME/Gallery/_wallpapers/b-727.jpg"
-#b-297
-LOCK_IMG="/tmp/lockscreen.png"
-
-magick "$IMG" -resize $(xdpyinfo | awk '/dimensions/{print $2}')^ -gravity center -extent $(xdpyinfo | awk '/dimensions/{print $2}') "$LOCK_IMG"
-
-i3lock -i="$LOCK_IMG" 
