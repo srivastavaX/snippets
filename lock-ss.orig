@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+
+LOCK_IMG="${XDG_RUNTIME_DIR:-/tmp}/lockscreen_shot.png"
+
+get_resolution() {
+    xrandr | awk '/\*/{print $1; exit}'
+}
+
+take_screenshot() {
+    local res w h
+    res=$(get_resolution)
+    w="${res%x*}"
+    h="${res#*x}"
+
+    # maim: fast, no cursor, exact dimensions
+    maim --geometry="${w}x${h}+0+0" "$LOCK_IMG"
+
+    # Blur + dim — adjust sigma (12) and colorize (40) to taste
+    magick "$LOCK_IMG"                  \
+        -blur 0x9                      \
+        -fill black                     \
+        -colorize 40                    \
+        PNG:"$LOCK_IMG"
+}
+
+take_screenshot
+
+i3lock                              \
+    --image="$LOCK_IMG"             \
+    --nofork                        \
+    --ignore-empty-password         \
+    --radius=90                     \
+    --ring-width=4                  \
+    --inside-color=00000000         \
+    --ring-color=689d6a88           \
+    --insidever-color=689d6a22      \
+    --ringver-color=689d6aff        \
+    --insidewrong-color=cc241d22    \
+    --ringwrong-color=cc241dff      \
+    --keyhl-color=ebdbb2ff          \
+    --bshl-color=fabd2fff           \
+    --separator-color=00000000      \
+    --line-color=00000000           \
+    --time-color=ebdbb2ff           \
+    --date-color=a89984ff           \
+    --verif-color=689d6aff          \
+    --wrong-color=cc241dff          \
+    --time-str="%H:%M"              \
+    --date-str="%A, %d %B"          \
+    --verif-text=""                 \
+    --wrong-text=""                 \
+    --noinput-text=""
+
+# Runs after unlock — nofork blocks until i3lock exits
+rm -f "$LOCK_IMG"

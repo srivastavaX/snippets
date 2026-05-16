@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+
+WALLPAPER="${1:-$HOME/Media/Wallpapers/lock.jpg}"
+LOCK_IMG="${XDG_RUNTIME_DIR:-/tmp}/lockscreen_wallpaper.png"
+
+get_resolution() {
+    xrandr | awk '/\*/{print $1; exit}'
+}
+
+generate_lock_image() {
+    local res
+    res=$(get_resolution)
+
+    local w h
+    w="${res%x*}"
+    h="${res#*x}"
+
+    magick "$WALLPAPER"          \
+        -resize "${w}x${h}^"     \
+        -gravity Center          \
+        -extent "${w}x${h}"      \
+        PNG:"$LOCK_IMG"
+}
+
+# Regenerate only if source is newer than cached image
+if [[ ! -f "$LOCK_IMG" ]] || [[ "$WALLPAPER" -nt "$LOCK_IMG" ]]; then
+    generate_lock_image
+fi
+
+i3lock                              \
+    --image="$LOCK_IMG"             \
+    --nofork                        \
+    --ignore-empty-password         \
+    \
+    --radius=225                    \
+    --ring-width=4                  \
+    \
+    --inside-color=00000066         \
+    --ring-color=689d6aff           \
+    --time-color=eceff4ff     \
+    --date-color=d8dee9ff     \
+    --time-size=100          \
+    --date-size=20          \
+    \
+    --screen 1                      \
+    --clock                         \
+    --indicator                     \
+    --time-str="%H:%M:%S"           \
+    --date-str="%A, %Y-%m-%d"       \
+    \
+    --insidever-color=689d6a44      \
+    --ringver-color=689d6aff        \
+    --separator-color=ff00ffcc      \
+    --insidewrong-color=cc241d44    \
+    --ringwrong-color=cc241dff      \
+    --keyhl-color=ebdbb2ff          \
+    --bshl-color=fabd2fff           \
+    --separator-color=00000000      \
+    --line-color=00000000           \
+    \
+    --verif-color=689d6aff          \
+    --wrong-color=cc241dff          \
+    --verif-text="*******"          \
+    --wrong-text="X"                \
+    --noinput-text=""
+
+    #--greeter-color=282828ff   \
+    #--greeter-font="Isoveka" \
+    #--greeter-size=15           \
+    #--greeter-text="A formidable person is one who seems like they'll get what they want, regardless of whatever obstacles are in the way"  \
+    #--greeter-pos="ix:iy+300"         \
